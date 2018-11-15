@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 		scratch=arraymin64(array);
 	}		
 	after = __rdtscp(&dummy);		
-	printf("Arraymin64 %d took %lld cycles/op.\n",size,(after-before)/100000);
+	printf("Arraymin64 took %lld cycles/op.\n",(after-before)/100000);
 #else 
 	for(int size=8;size<=1024;size*=2) {
 		before = __rdtscp(&dummy);	
