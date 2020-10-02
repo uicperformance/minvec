@@ -10,8 +10,8 @@ int arraymin(int* array, int size) {
 	return min;
 }
 
-int arraymin64(int* array) {
-	return arraymin(array,64);
+int arraymin256(int* array) {
+	return arraymin(array,256);
 }
 
 int minindex(int* array, int size) {

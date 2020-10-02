@@ -3,43 +3,44 @@
 #include<stdlib.h>
 #include<x86intrin.h>
 
-int scratch=0;
+volatile int scratch=0;
+#define MAX 65536
 
 int main(int argc, char** argv) {
 	int seed=789;
-	int array[1024];
-	for(int i=0;i<1024;i++,seed+=789) {
-		array[i]=seed%1024+12;
+	int array[MAX];
+	for(int i=0;i<MAX;i++,seed+=789) {
+		array[i]=seed%MAX+12;
 	}
 
 	unsigned dummy = 0;
 	long long before, after;
-#ifdef ARRAY64 
-	before = __rdtscp(&dummy);	
+#ifdef ARRAY256
+	before = __rdtscp(&dummy);
 	for(int i=0;i<100000;i++) {
-		scratch=arraymin64(array);
-	}		
-	after = __rdtscp(&dummy);		
-	printf("Arraymin64 took %lld cycles/op.\n",(after-before)/100000);
-#else 
-	for(int size=8;size<=1024;size*=2) {
-		before = __rdtscp(&dummy);	
+		scratch=arraymin256(array);
+	}
+	after = __rdtscp(&dummy);
+	printf("Arraymin256 took %lld cycles/op.\n",(after-before)/100000);
+#else
+	for(int size=8;size<=MAX;size*=2) {
+		before = __rdtscp(&dummy);
 		for(int i=0;i<1000;i++) {
 			scratch=arraymin(array,size);
-		}		
-		after = __rdtscp(&dummy);		
+		}
+		after = __rdtscp(&dummy);
 		printf("Arraymin %d took %lld cycles/op %.2f cycles/element.\n",size,(after-before)/1000,(after-before)/(1000.0*size));
 	}
 
 
-	for(int size=8;size<=1024;size*=2) {
-		before = __rdtscp(&dummy);	
+	for(int size=8;size<=MAX;size*=2) {
+		before = __rdtscp(&dummy);
 		for(int i=0;i<1000;i++) {
 			scratch=minindex(array,size);
-		}		
+		}
 		after = __rdtscp(&dummy);
 		printf("Minindex %d took %lld cycles/op %.2f cycles/element.\n",size,(after-before)/1000,(after-before)/(1000.0*size));
 	}
 #endif
-	
+
 }

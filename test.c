@@ -9,21 +9,21 @@ int main(int argc, char** argv) {
 		array[i]=seed%1024+12;
 	}
 
-#ifdef ARRAY64
+#ifdef ARRAY256
 	array[50]=10;
-	if(arraymin64(array)!=10) {
+	if(arraymin256(array)!=10) {
 		fprintf(stderr,"FAIL: Arraymin64 expected 10\n");
 		exit(1);
 	}
 
 	array[38]=9;
-	if(arraymin64(array)!=9) {
+	if(arraymin256(array)!=9) {
 		fprintf(stderr,"FAIL: Arraymin64 expected 9\n");
 		exit(1);
 	}
 
 	array[17]=-1;
-	if(arraymin64(array)!=-1) {
+	if(arraymin256(array)!=-1) {
 		fprintf(stderr,"FAIL: Arraymin64 expected -1\n");
 		exit(1);
 	}

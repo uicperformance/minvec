@@ -5,7 +5,7 @@ ROOT ?= ../..
 
 MAKE := make
 
-CFLAGS += -g -O3 -mavx2 -Wall -Winline 
+CFLAGS += -g -O3 -mavx2 -Winline -mavx512f -mavx512dq -mavx512cd -mavx512bw -mavx512vl  -Wall
 
 .PHONY: all clean
 
@@ -20,7 +20,7 @@ benchmark_novec: benchmark.c cmin.c
 benchmark_iterative: benchmark.c iterative.c
 	$(CC) $(CFLAGS) -o $@ $^
 benchmark_fixed: benchmark.c fixed.c
-	$(CC) $(CFLAGS) -DARRAY64 -o $@ $^
+	$(CC) $(CFLAGS) -DARRAY256 -o $@ $^
 
 
 test_vec: test.c cmin.c
@@ -30,7 +30,7 @@ test_novec: test.c cmin.c
 test_iterative: test.c iterative.c
 	$(CC) $(CFLAGS) -o $@ $^
 test_fixed: test.c fixed.c
-	$(CC) $(CFLAGS) -DARRAY64 -o $@ $^
+	$(CC) $(CFLAGS) -DARRAY256 -o $@ $^
 
 
 report.pdf: report.tex
