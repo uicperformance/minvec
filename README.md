@@ -36,11 +36,66 @@ For simplicity, you may use C code to compute the final index outside the loop.
 
 Plot cycles/op vs. input size. How does this compare the vectorized C version of `minindex`? 
 
-### Faster, Fixed-Sized Vector Min (bonus)
+### Multi-Threaded Vector Min
 
-In `fixed.c`, implement `arraymin()`. Here, the array always has 256 integer elements in it. Write the fastest array min you can come up with, targeting Skylake-X, using one big block of inline assembly, no branches, no loops. Here, feel free to make use of VPMINSD/SQ, and anything else you want to try.
+Having introduced optimized vector code, we've done all we can do on a single core. To go faster, we need the resources of additional cores, which is only available through multi-threading. 
 
-Once `test_fixed` runs without error, announce your best `benchmark_fixed` performance on Piazza.
+For this part, there is the added complexity of a mutator thread, which makes frequent "transfers" between array elements: it adds some number $x$ to one element, and subtracts the same $x$ from another element. To ensure consistency, the mutator thread requires exclusive access to the relevant array elements during these transfers.
 
-Hint: keep data dependencies, instruction latency and reciprocal throughput in mind. Check Agner Fog's tables for Skylake-X.
-Measure and share performance in cycles/op.
+
+The `benchmark_mt.c` program runs the mutator thread as well as a variable number of threads computing array minima. The benchmark program in turn computes, checks and reports the minimum of the minima returned from the threads. 
+
+Again, do not modify the `benchmark_mt.c` program. Instead, update `iterative.c` with a more efficient implementation of `minindex_mt()`. 
+
+As a first step, we will improve the performance without a running mutator (binary `benchmark_mt_nomut`).
+
+#### Use the right lock for the job
+
+In the template design, worker threads acquire the global lock before computing the minimum. This is necessary for correctness when the mutator thread runs. However, it's not very practical, since the workers end up working in sequence rather than in parallel, negating the benefits of multithreading. 
+
+Try switching to a single readers-writer lock `pthread_rwlock` instead, in which multiple readers can hold a single lock at the same time. 
+
+#### Eliminate Redundancy
+
+The template implementation does redundant work on all threads, resulting in no speedup. Instead, we should be dividing up the work between the threads.
+Here are a few different ways to divide up the work between N threads: 
+
+ * divide up the array into N contiguous sets of elements (sharded),
+ * have each thread process every N elements (interleaved) or, more generally
+ * have each thread process k elements spaced every kN elements (block interleaved)
+
+There may be other ways as well. Some questions to explore: 
+
+* Which of the sharded and interleaved cases do you expect to be faster?
+* For the block interleaved case, is there a range of `k` that you think may be better/worse than others?
+* Is the block interleaved faster/slower than the sharded case for all `k`?
+
+Don't guess, work out a hypothesis and a prediction. Then test it with an experiment.
+
+As mentioned before, if you make a precise prediction ("minor time difference, within 1%", "25% faster for k between 4 and 8"), a positive outcome is good evidence in support of your hypothesis. If it's a weak prediction ("takes longer", "more cache misses"), it's much more likely that to be coincidence. 
+
+#### Improve Locking with a Writer in the mix
+
+The mutator thread performs transfers periodically, with a frequency that increases over the duration of a run. 
+If any one transaction fails to finish before the next was meant to begin (i.e. the latency was greater than the period), the execution terminates. 
+
+If the mutator period is shorter than the time it takes for the workers to finish their job, therefore, we must ensure that the writer gets a chance to 
+perform its updates before the workers are done. 
+
+The mutator thread calls the `transfer_lock_acquire()`, `transfer_lock_release()` functions before and after each transfer. These take two arguments: the indexes of the two elements that will be modified. In the template, these functions simply acquire and release a global lock. 
+
+We need a different locking scheme. Here are some ideas:
+
+* have readers periodically release and reaquire the lock
+* split the array into several shards, and have a lock per shard
+* a lock per array item
+
+For longer critical sections, a readers-writer lock might work best. 
+For a lock per individual item, you certainly want to use a spinlock. 
+
+What's your best update frequency * scan rate * table size result?
+
+
+
+
+

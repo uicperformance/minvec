@@ -4,7 +4,7 @@
 #include<x86intrin.h>
 
 volatile int scratch=0;
-#define MAX 65536
+#define MAX 1024*1024
 
 int main(int argc, char** argv) {
 	int seed=789;

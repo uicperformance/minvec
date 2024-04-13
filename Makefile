@@ -32,6 +32,8 @@ test_iterative: test.c iterative.c
 test_fixed: test.c fixed.c
 	$(CC) $(CFLAGS) -DARRAY256 -o $@ $^
 
+mtbench: mtbench.c cmin.c
+	$(CC) $(CFLAGS) -o $@ $^
 
 report.pdf: report.tex
 	pdflatex report.tex
