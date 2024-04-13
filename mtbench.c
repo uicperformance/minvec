@@ -8,11 +8,12 @@
 #define MAX 1024*1024
 int array[MAX];
 pthread_mutex_t lock;
+pthread_barrier_t barrier;
 int arrsize;
 
 void* mutator_thread(void* voidrate) {
+    pthread_barrier_wait(&barrier);
     long rate=(long)voidrate;
-    printf("ran mutator at rate %ld\n",rate);
 }
 
 void* scanner_thread(void* void_tid) {
@@ -27,6 +28,7 @@ pthread_mutex_t lock;
 volatile int stop;
 int scans;
 void* scanner_main(void* unused) {
+    pthread_barrier_wait(&barrier);
     stop=0;
     scans=0;
     while(!stop) {
@@ -48,6 +50,7 @@ void* scanner_main(void* unused) {
 int main(int argc, char** argv) {
 	int seed=789;
     pthread_mutex_init(&lock,0);
+    pthread_barrier_init(&barrier,0,3);
 	for(int i=0;i<MAX;i++,seed+=789) {
 		array[i]=seed%MAX+12;
 	}
@@ -59,10 +62,11 @@ int main(int argc, char** argv) {
             pthread_t mutator, scanner;
             pthread_create(&mutator,0,mutator_thread,(void*)i);
             pthread_create(&scanner,0,scanner_main,(void*)0);
+            pthread_barrier_wait(&barrier);
             pthread_join(mutator,0);
             stop=1;            
             pthread_join(scanner,0);
-            printf("size %d rate %d scans %d score %d\n",size,i,scans,size*i*scans);
+            printf("size %d rate %d scans %d score %.1lf\n",size,i,scans,size*i*scans/1000000.0);
 		}
 	}
 }
