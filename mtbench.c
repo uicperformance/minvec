@@ -1,11 +1,13 @@
 #include"min.h"
 #include<stdio.h>
 #include<stdlib.h>
-//#include<x86intrin.h>
+#include<x86intrin.h>
 #include<pthread.h>
 
 #define THREADS 16
-#define MAX 1024*1024
+#define MAX (1024*1024)
+#define HZ 3000000000
+#define DURATION HZ*1
 int array[MAX];
 pthread_mutex_t lock;
 pthread_barrier_t barrier;
@@ -14,6 +16,32 @@ int arrsize;
 void* mutator_thread(void* voidrate) {
     pthread_barrier_wait(&barrier);
     long rate=(long)voidrate;
+    long interval=HZ/rate; // figuring 3 GHz
+    int dummy;    
+    long start_time=__rdtscp(&dummy);
+    long deadline=start_time+interval;
+    long after;
+    long count=0;
+    while(deadline<(start_time+DURATION)) { // 5 second experiment        
+        pthread_mutex_lock(&lock);
+        array[after%MAX]--;
+        array[(after+1)%MAX]++;
+        count++;
+        pthread_mutex_unlock(&lock); 
+        after=__rdtscp(&dummy);
+        if(after>deadline) {
+            printf("Mutator missed deadline.\n");
+            return -1;
+        }
+        else { // wait until next time            
+            do{ 
+                __pause();
+                after=__rdtscp(&dummy);
+            } while(after<deadline);
+        }
+        deadline+=interval;    
+    }
+    return 0;
 }
 
 void* scanner_thread(void* void_tid) {
@@ -58,15 +86,19 @@ int main(int argc, char** argv) {
 	unsigned scratch = 0;
 	for(int size=1024;size<=MAX;size*=2) {
         arrsize=size;
-		for(int i=0;i<1000;i+=10) {
+		for(int i=100;i<100000000;i*=2) {
             pthread_t mutator, scanner;
             pthread_create(&mutator,0,mutator_thread,(void*)i);
             pthread_create(&scanner,0,scanner_main,(void*)0);
             pthread_barrier_wait(&barrier);
-            pthread_join(mutator,0);
-            stop=1;            
+            void* mutator_return;
+            pthread_join(mutator,&mutator_return);
+            stop=1;                        
             pthread_join(scanner,0);
-            printf("size %d rate %d scans %d score %.1lf\n",size,i,scans,size*i*scans/1000000.0);
+            if(mutator_return != 0) {
+                break;
+            }
+            printf("size %d rate %d scans %d score %.1lf\n",size,i,scans,(double)size*(double)i*(double)scans/1000000.0);
 		}
 	}
 }

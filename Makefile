@@ -33,7 +33,7 @@ test_fixed: test.c fixed.c
 	$(CC) $(CFLAGS) -DARRAY256 -o $@ $^
 
 mtbench: mtbench.c cmin.c
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lpthread
 
 report.pdf: report.tex
 	pdflatex report.tex
