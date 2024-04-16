@@ -17,10 +17,10 @@ void* mutator_thread(void* voidrate) {
     pthread_barrier_wait(&barrier);
     long rate=(long)voidrate;
     long interval=HZ/rate; // figuring 3 GHz
-    int dummy;    
+    unsigned dummy;    
     long start_time=__rdtscp(&dummy);
     long deadline=start_time+interval;
-    long after;
+    long after=0;
     long count=0;
     while(deadline<(start_time+DURATION)) { // 5 second experiment        
         pthread_mutex_lock(&lock);
@@ -30,7 +30,7 @@ void* mutator_thread(void* voidrate) {
         pthread_mutex_unlock(&lock); 
         after=__rdtscp(&dummy);
         if(after>deadline) {
-            printf("Mutator missed deadline.\n");
+            printf("Mutator missed deadline for rate %ld.\n",rate);
             return -1;
         }
         else { // wait until next time            
@@ -49,7 +49,7 @@ void* scanner_thread(void* void_tid) {
     pthread_mutex_lock(&lock);
     int index=minindex(array,arrsize);
     pthread_mutex_unlock(&lock);
-    return (void*)index;
+    return index;
 }
 
 pthread_mutex_t lock;
@@ -65,7 +65,7 @@ void* scanner_main(void* unused) {
             pthread_create(&thread[t],0,scanner_thread,(void*)t);
         }
         int minindex = 0;            
-        for(long t=0;t<16;t++) {
+        for(long t=0;t<16;t++) { 
             long index;                
             pthread_join(thread[t],&index);
             if(array[minindex] > array[index]) {
@@ -74,6 +74,7 @@ void* scanner_main(void* unused) {
         }
         scans++;
     }
+    return 0;
 }
 int main(int argc, char** argv) {
 	int seed=789;
@@ -83,10 +84,9 @@ int main(int argc, char** argv) {
 		array[i]=seed%MAX+12;
 	}
     array[77]=-2;
-	unsigned scratch = 0;
 	for(int size=1024;size<=MAX;size*=2) {
         arrsize=size;
-		for(int i=100;i<100000000;i*=2) {
+		for(long i=100;i<100000000;i*=2) {
             pthread_t mutator, scanner;
             pthread_create(&mutator,0,mutator_thread,(void*)i);
             pthread_create(&scanner,0,scanner_main,(void*)0);
