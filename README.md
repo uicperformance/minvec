@@ -36,7 +36,7 @@ For simplicity, you may use C code to compute the final index outside the loop.
 
 Plot cycles/op vs. input size. How does this compare the vectorized C version of `minindex`? 
 
-### Multi-Threaded Vector Min
+### Multi-Threaded Vector Min (INCOMPLETE - PENDING UPDATE)
 
 Having introduced optimized vector code, we've done all we can do on a single core. To go faster, we need the resources of additional cores, which is only available through multi-threading. 
 
