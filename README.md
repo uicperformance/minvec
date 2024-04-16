@@ -42,24 +42,24 @@ Having introduced optimized vector code, we've done all we can do on a single co
 
 For this part, there is the added complexity of a mutator thread, which makes frequent "transfers" between array elements: it adds some number $x$ to one element, and subtracts the same $x$ from another element. To ensure consistency, the mutator thread requires exclusive access to the relevant array elements during these transfers.
 
-The `benchmark_mt.c` program runs the mutator thread as well as a variable number of threads computing array minima. The benchmark program in turn computes, checks and reports the minimum of the minima returned from the threads. 
+The `mtbench.c` program runs the mutator thread as well as a variable number of threads computing array minima. The benchmark program in turn computes, checks and reports the minimum of the minima returned from the threads. 
 
-For this part, you may modify `benchmark_mt.c`, to improve the synchronization behavior of the program. Specifically, you may want to modify the `scanner_thread` and `mutator_thread` functions. 
+For this part, you may modify `mtbench.c`, to improve the synchronization behavior of the program. Specifically, you may want to modify the `scanner_thread` and `mutator_thread` functions. 
 
-As a first step, we will improve the performance without a running mutator (binary `benchmark_mt_nomut`).
+As a first step, we will improve the performance without a running mutator (binary `mtbench_nomut`).
 
 #### Use the right lock for the job
 
 In the template design, worker threads acquire the global lock before computing the minimum. This is necessary for correctness when the mutator thread runs. However, it's not very practical, since the workers end up working in sequence rather than in parallel, negating the benefits of multithreading. 
 
-Try switching to a single readers-writer lock `pthread_rwlock` instead, in which multiple readers can hold a single lock at the same time. Run `benchmark_mt_nomut` to observe the performance difference between mutex and rwlock. 
+Try switching to a single readers-writer lock `pthread_rwlock` instead, in which multiple readers can hold a single lock at the same time. Run `mtbench_nomut` to observe the performance difference between mutex and rwlock. 
 
 #### Eliminate Redundancy
 
 The template implementation does redundant work on all threads, resulting in no speedup. Instead, we should be dividing up the work between the threads.
 Here are a few different ways to divide up the work between N threads: 
 
- * divide up the array into N contiguous sets of elements (sharded),
+ * divide up the array into N contiguous sets of elements, one set per thread (sharded),
  * have each thread process every N elements (interleaved) or, more generally
  * have each thread process k elements spaced every kN elements (block interleaved)
 
@@ -78,23 +78,19 @@ As mentioned before, if you make a precise prediction ("minor time difference, w
 The mutator thread performs transfers periodically, with a frequency that increases over the duration of a run. 
 If any one transaction fails to finish before the next was meant to begin (i.e. the latency was greater than the period), the execution terminates. 
 
-If the mutator period is shorter than the time it takes for the workers to finish their job, therefore, we must ensure that the writer gets a chance to 
-perform its updates before the workers are done. 
+If the mutator period is shorter than the time it takes for the workers to finish their job, therefore, we must ensure that the writer gets a chance to perform its updates before the workers are done. 
 
-The mutator thread calls the `transfer_lock_acquire()`, `transfer_lock_release()` functions before and after each transfer. These take two arguments: the indexes of the two elements that will be modified. In the template, these functions simply acquire and release a global lock. 
-
-We need a different locking scheme. Here are some ideas:
+In the template, the mutator thread holds the global lock during each transfer, meaning it can't do anything while the readers scan the array. We need a different locking scheme. Here are some ideas:
 
 * have readers periodically release and reaquire the lock
 * split the array into several shards, and have a lock per shard
-* a lock per array item
+* a lock per array item, instead of a single lock for the whole array
 
-For longer critical sections, a readers-writer lock might work best. 
-For a lock per individual item, you certainly want to use a spinlock. 
+For longer critical sections, a readers-writer lock might work best. For a lock per individual item, you certainly want to use a spinlock. In all cases, make sure that the mutator maintains mutual exclusion over the two elements it is updating in any one transfer, so that the reader threads cannot read an inconsistent result.
 
-What's your best update frequency * scan rate * table size result?
+*Note:* There is no test case to verify the accuracy of the minimum you compute, so it's your responsibility to make sure the readers hold the appropriate locks to access whatever elements they end up accessing. 
 
-
+The `mtbench` program outputs a score, which is the product of the maximum viable update frequency, the achieved scan rate, and the size of the table. What's your best score?
 
 
 
