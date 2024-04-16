@@ -27,6 +27,9 @@ test_novec: test.c cmin.c
 test_iterative: test.c iterative.c
 	$(CC) $(CFLAGS) -o $@ $^
 
+mtbench_nomut: mtbench.c cmin.c
+	$(CC) $(CFLAGS) -DNOMUT -o $@ $^ -lpthread
+
 mtbench: mtbench.c cmin.c
 	$(CC) $(CFLAGS) -o $@ $^ -lpthread
 

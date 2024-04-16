@@ -18,8 +18,8 @@ Using gnuplot, generate a plot of `benchmark_vec` and `benchmark_novec` (four se
 
 ### Iterative Vector Min
 
-In `iterative.c`, implement a vectorized `arraymin()` function using a combination of C and inline assembly.
-You may assume that the input size is a multiple of 64 64-bit integers. Similar to what we did in class, use a C for-loop, and an inline assembly loop body using the VPMINSD/SQ instruction to produce a vector of up to 64 values, one of which is the smallest. Then, finish the job after the loop using another chunk of inline assembly, to compute the single minimum value. For this part, consider using a combination of the instructions VPSHUFD, VPERM2I128, VALIGNR. 
+In `iterative.c`, implement a vectorized `arraymin()` function using a combination of C and inline assembly (or, if you prefer, C vector intrinsics).
+You may assume that the input size is a multiple of 64 64-bit integers. Similar to what we did in class, use a C for-loop, and an inline assembly loop body using the VPMINSD/SQ (sometimes this appears to be called VMINSD instead) instruction to produce a vector of up to 64 values, one of which is the smallest. Then, finish the job after the loop using another chunk of inline assembly, to compute the single minimum value. For this part, consider using a combination of the instructions VPSHUFD, VPERM2I128, VALIGNR.  
 
 What's faster, using the 512-bit (zmm) AVX512, the 256-bit (ymm) AVX2 or 128-bit (xmm) AVX instructions? 
 Plot cycles/op vs. input size. How does this compare the vectorized C version?
@@ -42,10 +42,9 @@ Having introduced optimized vector code, we've done all we can do on a single co
 
 For this part, there is the added complexity of a mutator thread, which makes frequent "transfers" between array elements: it adds some number $x$ to one element, and subtracts the same $x$ from another element. To ensure consistency, the mutator thread requires exclusive access to the relevant array elements during these transfers.
 
-
 The `benchmark_mt.c` program runs the mutator thread as well as a variable number of threads computing array minima. The benchmark program in turn computes, checks and reports the minimum of the minima returned from the threads. 
 
-Again, do not modify the `benchmark_mt.c` program. Instead, update `iterative.c` with a more efficient implementation of `minindex_mt()`. 
+For this part, you may modify `benchmark_mt.c`, to improve the synchronization behavior of the program. Specifically, you may want to modify the `scanner_thread` and `mutator_thread` functions. 
 
 As a first step, we will improve the performance without a running mutator (binary `benchmark_mt_nomut`).
 
@@ -53,7 +52,7 @@ As a first step, we will improve the performance without a running mutator (bina
 
 In the template design, worker threads acquire the global lock before computing the minimum. This is necessary for correctness when the mutator thread runs. However, it's not very practical, since the workers end up working in sequence rather than in parallel, negating the benefits of multithreading. 
 
-Try switching to a single readers-writer lock `pthread_rwlock` instead, in which multiple readers can hold a single lock at the same time. 
+Try switching to a single readers-writer lock `pthread_rwlock` instead, in which multiple readers can hold a single lock at the same time. Run `benchmark_mt_nomut` to observe the performance difference between mutex and rwlock. 
 
 #### Eliminate Redundancy
 

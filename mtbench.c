@@ -3,6 +3,7 @@
 #include<stdlib.h>
 #include<x86intrin.h>
 #include<pthread.h>
+#include<unistd.h>
 
 #define THREADS 16
 #define MAX (1024*1024)
@@ -21,12 +22,10 @@ void* mutator_thread(void* voidrate) {
     long start_time=__rdtscp(&dummy);
     long deadline=start_time+interval;
     long after=0;
-    long count=0;
     while(deadline<(start_time+DURATION)) { // 5 second experiment        
         pthread_mutex_lock(&lock);
         array[after%MAX]--;
         array[(after+1)%MAX]++;
-        count++;
         pthread_mutex_unlock(&lock); 
         after=__rdtscp(&dummy);
         if(after>deadline) {
@@ -46,7 +45,7 @@ void* mutator_thread(void* voidrate) {
 
 void* scanner_thread(void* void_tid) {
 //    long tid = (long)void_tid;
-    pthread_mutex_lock(0);
+    pthread_mutex_lock(&lock);
     long index=minindex(array,arrsize);
     pthread_mutex_unlock(&lock);
     return (void*)index;
@@ -79,7 +78,12 @@ void* scanner_main(void* unused) {
 int main(int argc, char** argv) {
 	int seed=789;
     pthread_mutex_init(&lock,0);
+    #ifndef NOMUT
     pthread_barrier_init(&barrier,0,3);
+    #else
+    pthread_barrier_init(&barrier,0,2);
+    #endif
+
 	for(int i=0;i<MAX;i++,seed+=789) {
 		array[i]=seed%MAX+12;
 	}
@@ -87,18 +91,37 @@ int main(int argc, char** argv) {
 	for(long size=1024;size<=MAX;size*=2) {
         arrsize=size;
 		for(long i=100;i<100000000;i*=2) {
-            pthread_t mutator, scanner;
+            #ifndef NOMUT
+            pthread_t mutator;
+            #endif
+
+
+            pthread_t scanner;
+
+            #ifndef NOMUT
             pthread_create(&mutator,0,mutator_thread,(void*)i);
+            #endif
+
             pthread_create(&scanner,0,scanner_main,(void*)0);
             pthread_barrier_wait(&barrier);
-            void* mutator_return;
+            void* mutator_return=(void*)0;
+
+            #ifndef NOMUT
             pthread_join(mutator,&mutator_return);
-            stop=1;                        
+            #else 
+            sleep(2);
+            #endif
+
+            stop=1;           
             pthread_join(scanner,0);
+
             if(mutator_return != 0) {
                 break;
             }
             printf("size %ld rate %ld scans %d score %.1lf\n",size,i,scans,(double)size*(double)i*(double)scans/1000000.0);
+            #ifdef NOMUT
+            break;
+            #endif
 		}
 	}
 }
