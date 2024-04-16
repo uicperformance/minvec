@@ -46,7 +46,7 @@ void* mutator_thread(void* voidrate) {
 
 void* scanner_thread(void* void_tid) {
 //    long tid = (long)void_tid;
-    pthread_mutex_lock(&lock);
+    pthread_mutex_lock(0);
     long index=minindex(array,arrsize);
     pthread_mutex_unlock(&lock);
     return (void*)index;

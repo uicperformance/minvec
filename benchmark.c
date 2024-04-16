@@ -15,14 +15,7 @@ int main(int argc, char** argv) {
 
 	unsigned dummy = 0;
 	long long before, after;
-#ifdef ARRAY256
-	before = __rdtscp(&dummy);
-	for(int i=0;i<100000;i++) {
-		scratch=arraymin256(array);
-	}
-	after = __rdtscp(&dummy);
-	printf("Arraymin256 took %lld cycles/op.\n",(after-before)/100000);
-#else
+
 	for(int size=8;size<=MAX;size*=2) {
 		before = __rdtscp(&dummy);
 		for(int i=0;i<1000;i++) {
@@ -41,6 +34,5 @@ int main(int argc, char** argv) {
 		after = __rdtscp(&dummy);
 		printf("Minindex %d took %lld cycles/op %.2f cycles/element.\n",size,(after-before)/1000,(after-before)/(1000.0*size));
 	}
-#endif
 
 }
