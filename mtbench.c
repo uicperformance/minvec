@@ -31,7 +31,7 @@ void* mutator_thread(void* voidrate) {
         after=__rdtscp(&dummy);
         if(after>deadline) {
             printf("Mutator missed deadline for rate %ld.\n",rate);
-            return -1;
+            return (void*)-1;
         }
         else { // wait until next time            
             do{ 
@@ -41,15 +41,15 @@ void* mutator_thread(void* voidrate) {
         }
         deadline+=interval;    
     }
-    return 0;
+    return (void*)0;
 }
 
 void* scanner_thread(void* void_tid) {
-    long tid = (long)void_tid;
+//    long tid = (long)void_tid;
     pthread_mutex_lock(&lock);
-    int index=minindex(array,arrsize);
+    long index=minindex(array,arrsize);
     pthread_mutex_unlock(&lock);
-    return index;
+    return (void*)index;
 }
 
 pthread_mutex_t lock;
@@ -67,7 +67,7 @@ void* scanner_main(void* unused) {
         int minindex = 0;            
         for(long t=0;t<16;t++) { 
             long index;                
-            pthread_join(thread[t],&index);
+            pthread_join(thread[t],(void**)&index);
             if(array[minindex] > array[index]) {
                 minindex=index;
             }
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 		array[i]=seed%MAX+12;
 	}
     array[77]=-2;
-	for(int size=1024;size<=MAX;size*=2) {
+	for(long size=1024;size<=MAX;size*=2) {
         arrsize=size;
 		for(long i=100;i<100000000;i*=2) {
             pthread_t mutator, scanner;
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
             if(mutator_return != 0) {
                 break;
             }
-            printf("size %d rate %d scans %d score %.1lf\n",size,i,scans,(double)size*(double)i*(double)scans/1000000.0);
+            printf("size %ld rate %ld scans %d score %.1lf\n",size,i,scans,(double)size*(double)i*(double)scans/1000000.0);
 		}
 	}
 }
