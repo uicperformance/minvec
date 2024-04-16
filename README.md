@@ -12,14 +12,14 @@ To build the programs, simply run `make` in the checked-out repository folder. F
 
 ### Establish performance baseline, and prepare plots with gnuplot
 
-In `cmin.c`, the implementations of `arraymin()`, and `minindex()` already complete `test_cvec` and `test_novec` without error. While `arraymin()` returns the minimum value, `minindex()` should return the index of the smallest value. Run `benchmark_cvec` and `benchmark_cnovec` to measure the performance of this implementation with and without vectorization.
+In `cmin.c`, the implementations of `arraymin()`, and `minindex()` already complete `test_vec` and `test_novec` without error. While `arraymin()` returns the minimum value, `minindex()` should return the index of the smallest value. Run `benchmark_vec` and `benchmark_novec` to measure the performance of this implementation with and without vectorization.
 
-Using gnuplot, generate a plot of `benchmark_cvec` and `benchmark_cnovec` (four separate, labeled lines), with input size on the x-axis, and cycles/op on the y-axis. Use sizes from 8 to 65536 elements. 
+Using gnuplot, generate a plot of `benchmark_vec` and `benchmark_novec` (four separate, labeled lines), with input size on the x-axis, and cycles/op on the y-axis. Use sizes from 8 to 65536 elements. 
 
 ### Iterative Vector Min
 
 In `iterative.c`, implement a vectorized `arraymin()` function using a combination of C and inline assembly.
-You may assume that the input size is a multiple of 64 64-bit integers. Similar to what we did in class, use a C for-loop, and an inline assembly loop body using the VPMINSD/SQ instruction to produce a vector of up to 64 values, one of which is the smallest. Then, finish the job after the loop using another chunk of inline assembly, to compute the single minimum value. For this part, consider using a combination of the instructions VPSHUFD, VPERM2I128, VALIGNR.
+You may assume that the input size is a multiple of 64 64-bit integers. Similar to what we did in class, use a C for-loop, and an inline assembly loop body using the VPMINSD/SQ instruction to produce a vector of up to 64 values, one of which is the smallest. Then, finish the job after the loop using another chunk of inline assembly, to compute the single minimum value. For this part, consider using a combination of the instructions VPSHUFD, VPERM2I128, VALIGNR. 
 
 What's faster, using the 512-bit (zmm) AVX512, the 256-bit (ymm) AVX2 or 128-bit (xmm) AVX instructions? 
 Plot cycles/op vs. input size. How does this compare the vectorized C version?
