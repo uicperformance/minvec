@@ -6,9 +6,11 @@
 volatile int scratch=0;
 #define MAX 1024*1024
 
+int array[MAX] __attribute__((aligned(64)));
+
 int main(int argc, char** argv) {
 	int seed=789;
-	int array[MAX];
+
 	for(int i=0;i<MAX;i++,seed+=789) {
 		array[i]=seed%MAX+12;
 	}

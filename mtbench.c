@@ -32,7 +32,7 @@ void* mutator_thread(void* voidrate) {
             printf("Mutator missed deadline for rate %ld.\n",rate);
             return (void*)-1;
         }
-        else { // wait until next time            
+        else { // wait until next time     
             do{ 
                 __pause();
                 after=__rdtscp(&dummy);
@@ -71,6 +71,7 @@ void* scanner_main(void* unused) {
                 minindex=index;
             }
         }
+//        scanner_thread(0);
         scans++;
     }
     return 0;

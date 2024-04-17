@@ -20,11 +20,16 @@ benchmark_novec: benchmark.c cmin.c
 benchmark_iterative: benchmark.c iterative.c
 	$(CC) $(CFLAGS) -o $@ $^
 
+benchmark_solution: benchmark.c solution.c
+	$(CC) $(CFLAGS) -o $@ $^
+
 test_vec: test.c cmin.c
 	$(CC) $(CFLAGS) -o $@ $^
 test_novec: test.c cmin.c
 	$(CC) $(CFLAGS) -fno-tree-vectorize -o $@ $^
 test_iterative: test.c iterative.c
+	$(CC) $(CFLAGS) -o $@ $^
+test_solution: test.c solution.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 mtbench_nomut: mtbench.c cmin.c

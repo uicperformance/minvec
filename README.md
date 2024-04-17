@@ -73,6 +73,14 @@ Don't guess, work out a hypothesis and a prediction. Then test it with an experi
 
 As mentioned before, if you make a precise prediction ("minor time difference, within 1%", "25% faster for k between 4 and 8"), a positive outcome is good evidence in support of your hypothesis. If it's a weak prediction ("takes longer", "more cache misses"), it's much more likely that to be coincidence. 
 
+#### Consider *not* multi-threading
+
+For small problems, it can be much faster to not incur the overhead of launching multiple threads, and simply completing the work on a single thread. You could consider going with single-threaded readers for small problems.
+
+#### Consider keeping the threads alive
+
+Another approach that can be very fruitful for shorter jobs is not starting new threads every time, but instead waking up existing threads. In the template, we already use a barrier for synchronization. A similar barrier could be used by threads waiting for their next job. 
+
 #### Improve Locking with a Writer in the mix
 
 The mutator thread performs transfers periodically, with a frequency that increases over the duration of a run. 
