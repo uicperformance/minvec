@@ -22,7 +22,7 @@ void* mutator_thread(void* voidrate) {
     long start_time=__rdtscp(&dummy);
     long deadline=start_time+interval;
     long after=0;
-    while(deadline<(start_time+DURATION)) { // 5 second experiment        
+    while(deadline<(start_time+DURATION)) { // 1 second experiment        
         pthread_mutex_lock(&lock);
         array[after%arrsize]--;
         array[(after+1)%arrsize]++;
