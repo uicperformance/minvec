@@ -24,8 +24,8 @@ void* mutator_thread(void* voidrate) {
     long after=0;
     while(deadline<(start_time+DURATION)) { // 5 second experiment        
         pthread_mutex_lock(&lock);
-        array[after%MAX]--;
-        array[(after+1)%MAX]++;
+        array[after%arrsize]--;
+        array[(after+1)%arrsize]++;
         pthread_mutex_unlock(&lock); 
         after=__rdtscp(&dummy);
         if(after>deadline) {
