@@ -27,6 +27,13 @@ int main(int argc, char** argv) {
 		printf("Arraymin %d took %lld cycles/op %.2f cycles/element.\n",size,(after-before)/1000,(after-before)/(1000.0*size));
 	}
 
+	// int size=64;
+	// before = __rdtscp(&dummy);
+	// for(int i=0;i<1000;i++) {
+	// 	scratch=arraymin64(array);
+	// }
+	// after = __rdtscp(&dummy);
+	// printf("Arraymin64 %d took %lld cycles/op %.2f cycles/element.\n",size,(after-before)/1000,(after-before)/(1000.0*64));
 
 	for(int size=8;size<=MAX;size*=2) {
 		before = __rdtscp(&dummy);
