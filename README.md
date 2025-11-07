@@ -45,5 +45,5 @@ Start by writing a replacement for the VPMINSD instruction using VCMPGTD (compar
 For simplicity, you may use C code to compute the final index outside the loop.
 
 - Plot cycles/op vs. input size. How does this compare the vectorized C version of `minindex`? 
-- How fast can you get this? 
+- How fast can you get this? My solution runs just under 0.6 cycles per element. 
 
