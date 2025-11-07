@@ -32,11 +32,11 @@ test_iterative: test.c iterative.c
 test_solution: test.c solution.c
 	$(CC) $(CFLAGS) -o $@ $^
 
-mtbench_nomut: mtbench.c cmin.c
-	$(CC) $(CFLAGS) -DNOMUT -o $@ $^ -lpthread
+# mtbench_nomut: mtbench.c cmin.c
+# 	$(CC) $(CFLAGS) -DNOMUT -o $@ $^ -lpthread
 
-mtbench: mtbench.c cmin.c
-	$(CC) $(CFLAGS) -o $@ $^ -lpthread
+# mtbench: mtbench.c cmin.c
+# 	$(CC) $(CFLAGS) -o $@ $^ -lpthread
 
 report.pdf: report.tex
 	pdflatex report.tex
