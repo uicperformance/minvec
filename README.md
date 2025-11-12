@@ -4,7 +4,7 @@ Since MMX was first introduced in the 90's, x86 CPUs have offered a growing arra
 
 ## Preliminaries
 
-This homework requires access to a machine with AVX512 extensions, which is available on our the quads1 server. I've made quads1 available to the class, accessible as follows: `ssh -p 8131 bits-head.cs.uic.edu`. As with pages, your UIC netid password applies. For this homework, we are writing single-threaded programs, however, so if your own computer supports AVX512, feel free to use that. Even (shudder) virtual machines could be ok, as long as the host CPU supports AVX512. Watch out: if a researcher is running parallel code on the machine while you are running your program, your performance results could be heavily affected. Before running a performance experiment, take a quick lock with `htop`.
+This homework requires access to a machine with AVX512 extensions, which is available on our the quads1 server. I've made quads1 available to the class, accessible as follows: `ssh -p 8131 bits-head.cs.uic.edu`. As with nodes, your UIC netid password applies. For this homework, we are writing single-threaded programs, however, so if your own computer supports AVX512, feel free to use that. Even (shudder) virtual machines could be ok, as long as the host CPU supports AVX512. Watch out: if a researcher is running parallel code on the machine while you are running your program, your performance results could be heavily affected. Before running a performance experiment, take a quick lock with `htop`.
 
 ## Getting started
 
