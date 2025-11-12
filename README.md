@@ -28,7 +28,7 @@ not show a similar trend? Try using performance tools to investigate.
 Initially, `iterative.c` is identical to `cmin.c`.
 
 In `iterative.c`, implement a vectorized `arraymin()` function using a combination of C and inline assembly (or, if you prefer, C vector intrinsics).
-You may assume that the input size is a multiple of 64 64-bit integers. Similar to what we did in class, use a C for-loop, and an inline assembly loop body using the VPMINSD/SQ (sometimes this appears to be called VMINSD instead) instruction to produce a vector of up to 64 values, one of which is the smallest. Then, finish the job after the loop using another chunk of inline assembly, to compute the single minimum value. For this part, consider using a combination of the instructions VPSHUFD, VPERM2I128, VALIGNR.  
+You may assume that the input size is a multiple of 64 32-bit integers. Similar to what we did in class, use a C for-loop, and an inline assembly loop body using the VPMINSD (sometimes this appears to be called VMINSD instead) instruction to produce a vector of up to 64 values, one of which is the smallest. Then, finish the job after the loop using another chunk of inline assembly, to compute the single minimum value. For this part, consider using a combination of the instructions VPSHUFD, VPERM2I128, VALIGNR.  
 
 - Plot cycles/op vs. input size for your version and the C version.
 - What's faster, using the 512-bit (zmm) AVX512, the 256-bit (ymm) AVX2 or 128-bit (xmm) AVX instructions? You can try specifying the available instruction set to gcc with `-m`, or with clang `-mprefer-vector-width` to force the compiler to produce different versions.
